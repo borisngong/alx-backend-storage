@@ -1,4 +1,4 @@
--- This script creates an index on the first letter of the name column in the names table.
+-- Script that creates an idx on the 1st letter of name column
 
 -- Drop the index if it already exists (to avoid conflicts)
 DROP INDEX IF EXISTS idx_name_first ON names;
