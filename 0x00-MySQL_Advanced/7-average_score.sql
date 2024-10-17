@@ -1,6 +1,6 @@
 -- This stored procedure computes and stores the average score for a student.
 
-DELIMITER $$  -- Change the delimiter to allow for procedure definition
+DELIMITER $$
 
 CREATE PROCEDURE ComputeAverageScoreForUser (
     IN user_id INT  -- User ID linked to an existing user
@@ -19,4 +19,4 @@ BEGIN
     WHERE id = user_id;
 END $$
 
-DELIMITER ;  -- Reset the delimiter back to the default
+DELIMITER ;
