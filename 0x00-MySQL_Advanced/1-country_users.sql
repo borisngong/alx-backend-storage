@@ -1,7 +1,8 @@
-CREATE TABLE IF NOT EXISTS users (
-    id INT NOT NULL AUTO_INCREMENT,
+-- Script for creating that creates a table users --
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
     EMAIL VARCHAR(255) NOT NULL UNIQUE,
     NAME VARCHAR(255),
-    country ENUM('US', 'CO', 'TN') NOT NULL DEFAULT 'US',
-    PRIMARY KEY (id)
+    country CHAR(2) NOT NULL DEFAULT 'US' CHECK (country IN ('US', 'CO', 'TN'))
 );
