@@ -1,3 +1,6 @@
+-- Script that coumputes Average weighted score for all students
+utes Average weighted score for all students
+utes Average weighted score for all students
 DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUsers;
 DELIMITER $$
 CREATE PROCEDURE ComputeAverageWeightedScoreForUsers ()
