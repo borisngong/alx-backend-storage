@@ -1,0 +1,2 @@
+// Update a collection
+db.school.updateOne({ name:"Holberton school"}, {$set:{address:"972 Mission street"}})
