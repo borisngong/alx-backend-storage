@@ -17,7 +17,7 @@ def count_calls(method: Callable) -> Callable:
     def wrapper(self, *args, **kwargs):
         # Increment the call count for the method's qualified name in Redis
         key = f"{method.__qualname__}"
-        self._redis.incr(key)  # Increment the call count
+        self._redis.incr(key)
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -32,13 +32,10 @@ def call_history(method: Callable) -> Callable:
         input_key = f"{method.__qualname__}:inputs"
         output_key = f"{method.__qualname__}:outputs"
 
-        # Store the input arguments as a string in Redis
         self._redis.rpush(input_key, str(args))
 
-        # Call the original method and get the result
         result = method(self, *args, **kwargs)
 
-        # Store the output in Redis
         self._redis.rpush(output_key, str(result))
 
         return result
@@ -75,22 +72,26 @@ class Cache:
 
     @call_history
     @count_calls
-    def store(self, data: Union[str, bytes, int, float]) -> str:
+    def store(self, data: Union[str, bytes, int, float],
+              expire: Optional[int] = None) -> str:
         """
-        Store data in Redis with a randomly generated key and return the key.
+        Store data in Redis with a randomly generated key,
+        optionally set an expiration time, and return the key.
         """
         key = str(uuid.uuid4())  # Generate a unique UUID as the key
         self._redis.set(key, data)  # Store the data in Redis
+        if expire:
+            self._redis.expire(key, expire)  # Set expiration time if provided
         return key  # Return the generated key
 
     def get(self, key: str, fn: Optional[Callable] = None):
         """
         Responsible for retrieving data from Redis and apply an
-        optional conversion function
+        optional conversion function.
         """
         value = self._redis.get(key)  # Get the value from Redis
         if value and fn:
-            return fn(value)
+            return fn(value)  # raw value
         return value
 
     def get_str(self, key: str) -> str:
