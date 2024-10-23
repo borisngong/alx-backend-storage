@@ -12,6 +12,7 @@ from typing import Union
 import redis
 import uuid
 from typing import Union
+from typing import Callable, Optional
 
 
 class Cache:
@@ -22,6 +23,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    # Increment
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in Redis with a random key and return the key.
@@ -29,3 +31,24 @@ class Cache:
         key = str(uuid.uuid4())  # Generate a random UUID key
         self._redis.set(key, data)  # Store data in Redis
         return key
+
+    def get(self, key: str, fn: Optional[Callable] = None):
+        """
+        Retrieve data from Redis and apply an optional conversion function.
+        """
+        value = self._redis.get(key)  # Get value from Redis
+        if value and fn:  # Apply conversion function if provided
+            return fn(value)
+        return value
+
+    def get_str(self, key: str) -> str:
+        """
+        Retrieve a string from Redis.
+        """
+        return self.get(key, lambda d: d.decode('utf-8'))
+
+    def get_int(self, key: str) -> int:
+        """
+        Retrieve an integer from Redis.
+        """
+        return self.get(key, int)
