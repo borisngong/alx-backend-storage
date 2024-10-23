@@ -1,2 +1,2 @@
 // A script that lists all documents with name starting by Holberton
-db.school.find({name: /Holberton.*/}).forEach(printjson);
+db.school.find({name: /Holberton.*/})
