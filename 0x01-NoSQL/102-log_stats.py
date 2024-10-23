@@ -25,7 +25,7 @@ def nginx_logs(mongo_collection):
     status_check = mongo_collection.count_documents({
         "method": "GET", "path": "/status"})
     print(f"{status_check} status check")
-    
+
     # IPs
     print("IPs:")
     ip_count = mongo_collection.aggregate([
@@ -33,7 +33,7 @@ def nginx_logs(mongo_collection):
         {"$sort": {"count": -1}},
         {"$limit": 10}
     ])
-    
+
     for ip in ip_count:
         print(f"\t{ip['_id']}: {ip['count']}")
 
