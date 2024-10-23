@@ -1,39 +1,36 @@
 #!/usr/bin/env python3
 """
-A cript that provides some stats about Nginx logs stored in MongoDB
+A script that provides some stats about Nginx logs stored in MongoDB
 """
 from pymongo import MongoClient
 
 
 def nginx_logs(mongo_collection):
     """
-    Function responsible is to display statistics about the Nginx logs
+    Provides statistics about the Nginx logs in MongoDB.
     """
+    # Total number of logs
     total_logs = mongo_collection.count_documents({})
-    print("{} logs".format(total_logs))
+    print(f"{total_logs} logs")
 
-    # The Http methods we want to check
-    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-    print("methods:")
+    # HTTP methods and their count
+    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print("Methods:")
     for method in methods:
         method_count = mongo_collection.count_documents({"method": method})
-        print("\tmethod {}: {}".format(method, method_count))
-    # Count the number of GET requests specifically for the `/status` path
-    status_requests = mongo_collection.count_documents({
+        print(f"\tmethod {method}: {method_count}")
+
+    # Count GET requests to `/status` path
+    status_check = mongo_collection.count_documents({
         "method": "GET", "path": "/status"})
-    print("{} status check".format(status_requests))
+    print(f"{status_check} status check")
 
 
-def app_run():
-    """
-    Connect to MongoDB and call the function to display Nginx log stats
-    """
-    client = MongoClient('mongodb://127.0.0.1:27017')
-    # Access the 'nginx' collection within the 'logs' database
-    mongo_collection = client.logs.nginx
-    # call function above that prints nginx logs
-    nginx_logs(mongo_collection)
+if __name__ == "__main__":
+    # Connect to the MongoDB database and collection
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client.logs
+    collection = db.nginx
 
-
-if __name__ == '__main__':
-    app_run()
+    # Call the function to display statistics
+    nginx_logs(collection)
