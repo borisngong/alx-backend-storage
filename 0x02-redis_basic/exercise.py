@@ -3,12 +3,7 @@
 Module that Initializes the Redis client and flushes the database
 """
 
-import redis
-import uuid
-from typing import Union
 
-
-# exercise.py
 import redis
 import uuid
 from typing import Union
