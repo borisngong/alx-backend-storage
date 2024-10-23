@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Module that Initializes the Redis client and flushes the database
+Module that initializes the Redis client and provides caching functionality.
 """
 
 import redis
@@ -11,13 +11,13 @@ from functools import wraps
 
 def count_calls(method: Callable) -> Callable:
     """
-    Count the number of times a method is called.
+    Decorator to count the number of times a method is called.
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        # Increment the call count for the method's qualified name
+        # Increment the call count for the method's qualified name in Redis
         key = f"{method.__qualname__}"
-        self._redis.incr(key)  # Increment in Redis
+        self._redis.incr(key)  # Increment the call count
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -25,20 +25,20 @@ def count_calls(method: Callable) -> Callable:
 
 def call_history(method: Callable) -> Callable:
     """
-    Store the history of inputs and outputs for a function.
+    Decorator to store the history of inputs and outputs for a function.
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         input_key = f"{method.__qualname__}:inputs"
         output_key = f"{method.__qualname__}:outputs"
 
-        # Store the input arguments as a string
+        # Store the input arguments as a string in Redis
         self._redis.rpush(input_key, str(args))
 
         # Call the original method and get the result
         result = method(self, *args, **kwargs)
 
-        # Store the output
+        # Store the output in Redis
         self._redis.rpush(output_key, str(result))
 
         return result
@@ -59,6 +59,7 @@ def replay(method: Callable):
     print(f"{key} was called {len(inputs)} times:")
 
     for input_data, output_data in zip(inputs, outputs):
+        # Decode input and output data for display
         input_data = input_data.decode('utf-8')
         output_data = output_data.decode('utf-8')
         print(f"{key}(*{input_data}) -> {output_data}")
@@ -69,36 +70,36 @@ class Cache:
         """
         Initialize the Redis client and flush the database.
         """
-        self._redis = redis.Redis()
-        self._redis.flushdb()
+        self._redis = redis.Redis()  # Connect to Redis server
+        self._redis.flushdb()  # Clear the database
 
     @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
-        Store data in Redis with a random key and return the key.
+        Store data in Redis with a randomly generated key and return the key.
         """
-        key = str(uuid.uuid4())  # Generate a random UUID key
-        self._redis.set(key, data)  # Store data in Redis
-        return key
+        key = str(uuid.uuid4())  # Generate a unique UUID as the key
+        self._redis.set(key, data)  # Store the data in Redis
+        return key  # Return the generated key
 
     def get(self, key: str, fn: Optional[Callable] = None):
         """
         Retrieve data from Redis and apply an optional conversion function.
         """
-        value = self._redis.get(key)
+        value = self._redis.get(key)  # Get the value from Redis
         if value and fn:
-            return fn(value)
-        return value
+            return fn(value)  # Apply the conversion function if provided
+        return value  # Return the raw value
 
     def get_str(self, key: str) -> str:
         """
-        Retrieves a string from Redis.
+        Retrieve a string value from Redis.
         """
-        return self.get(key, lambda d: d.decode('utf-8'))
+        return self.get(key, lambda d: d.decode('utf-8'))  # Decode bytes to string
 
     def get_int(self, key: str) -> int:
         """
-        Retrieve an integer from Redis.
+        Retrieve an integer value from Redis.
         """
-        return self.get(key, int)
+        return self.get(key, int)  # Convert the value to integer
