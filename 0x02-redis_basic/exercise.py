@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Module that initializes the Redis client and provides caching functionality.
+Module that initializes the Redis client and provides caching functionality
 """
 
 import redis
@@ -85,21 +85,22 @@ class Cache:
 
     def get(self, key: str, fn: Optional[Callable] = None):
         """
-        Retrieve data from Redis and apply an optional conversion function.
+        Responsible for retrieving data from Redis and apply an
+        optional conversion function
         """
         value = self._redis.get(key)  # Get the value from Redis
         if value and fn:
-            return fn(value)  # Apply the conversion function if provided
-        return value  # Return the raw value
+            return fn(value)
+        return value
 
     def get_str(self, key: str) -> str:
         """
         Retrieve a string value from Redis.
         """
-        return self.get(key, lambda d: d.decode('utf-8'))  # Decode bytes to string
+        return self.get(key, lambda d: d.decode('utf-8'))
 
     def get_int(self, key: str) -> int:
         """
         Retrieve an integer value from Redis.
         """
-        return self.get(key, int)  # Convert the value to integer
+        return self.get(key, int)
