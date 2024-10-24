@@ -7,7 +7,6 @@ import redis
 import uuid
 from typing import Union, Callable, Optional
 from functools import wraps
-import requests
 
 
 def count_calls(method: Callable) -> Callable:
@@ -26,7 +25,7 @@ def count_calls(method: Callable) -> Callable:
 
 def call_history(method: Callable) -> Callable:
     """
-    Store the history of inputs and outputs for a function
+    Store the history of inputs and outputs for a function.
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
@@ -50,7 +49,7 @@ def call_history(method: Callable) -> Callable:
 class Cache:
     def __init__(self):
         """
-        Initialize the Redis client and flush the database
+        Initialize the Redis client and flush the database.
         """
         self._redis = redis.Redis()
         self._redis.flushdb()
@@ -59,7 +58,7 @@ class Cache:
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
-        Store data in Redis with a random key and return the key
+        Store data in Redis with a random key and return the key.
         """
         key = str(uuid.uuid4())  # Generate a random UUID key
         self._redis.set(key, data)  # Store data in Redis
@@ -67,7 +66,7 @@ class Cache:
 
     def get(self, key: str, fn: Optional[Callable] = None):
         """
-        Retrieve data from Redis and apply conversion
+        Retrieve data from Redis and apply an optional conversion function.
         """
         value = self._redis.get(key)
         if value and fn:
@@ -85,38 +84,3 @@ class Cache:
         Retrieve an integer from Redis.
         """
         return self.get(key, int)
-
-    def count_url_access(self, url: str):
-        """
-        Increment the count of URL accesses in Redis.
-        """
-        key = f"count:{url}"
-        self._redis.incr(key)
-
-    def cache_expiration(self, seconds: int):
-        """
-        Decorator to set expiration time for cached data.
-        """
-        def decorator(func: Callable):
-            @wraps(func)
-            def wrapper(url: str):
-                # First, try to get the cached result
-                cached_result = self._redis.get(url)
-                if cached_result:
-                    return cached_result.decode('utf-8')
-
-                result = func(url)
-
-                self._redis.setex(url, seconds, result)
-                return result
-            return wrapper
-        return decorator
-
-    @cache_expiration(10)  # 10 seconds cache expiration time
-    def get_page(self, url: str) -> str:
-        """
-        Obtain the HTML content of a particular URL and return it.
-        """
-        self.count_url_access(url)  # Track URL access
-        response = requests.get(url)
-        return response.text
